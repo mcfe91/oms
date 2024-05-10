@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	serviceName = "orders"
-	grpcAddr    = common.EnvString("GRPC_ADDR", "localhost:2000")
+	serviceName = "payments"
+	grpcAddr    = common.EnvString("GRPC_ADDR", "localhost:2001")
 	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
 	amqpUser    = common.EnvString("RABBITMQ_USER", "guest")
 	amqpPass    = common.EnvString("RABBITMQ_PASS", "guest")
@@ -53,6 +53,10 @@ func main() {
 		ch.Close()
 	}()
 
+	svc := NewService()
+	amqpConsumer := NewConsumer(svc)
+	go amqpConsumer.Listen(ch)
+
 	grpcServer := grpc.NewServer()
 
 	l, err := net.Listen("tcp", grpcAddr)
@@ -60,12 +64,6 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	defer l.Close()
-
-	store := NewStore()
-	svc := NewService(store)
-	NewGRPCHandler(grpcServer, svc, ch)
-
-	svc.CreateOrder(context.Background())
 
 	log.Println("grpc server started at", grpcAddr)
 
