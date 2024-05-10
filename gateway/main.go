@@ -20,7 +20,7 @@ var (
 )
 
 func main() {
-	registry, err := consul.NewRegistry(consulAddr, serviceName)
+	registry, err := consul.NewRegistry(consulAddr)
 	if err != nil {
 		panic(err)
 	}

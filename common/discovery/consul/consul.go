@@ -15,7 +15,7 @@ type Registry struct {
 	client *consul.Client
 }
 
-func NewRegistry(addr, serviceName string) (*Registry, error) {
+func NewRegistry(addr string) (*Registry, error) {
 	config := consul.DefaultConfig()
 	config.Address = addr
 
