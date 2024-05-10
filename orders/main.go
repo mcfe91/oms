@@ -18,7 +18,7 @@ func main() {
 
 	l, err := net.Listen("tcp", grpcAddr)
 	if err != nil {
-		log.Fatal("failed to listen: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
 	defer l.Close()
 
