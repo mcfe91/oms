@@ -5,12 +5,17 @@ import (
 	"testing"
 
 	"github.com/mcfe91/commons/api"
+	inmemRegistry "github.com/mcfe91/commons/discovery/inmem"
+	"github.com/mcfe91/oms-payments/gateway"
 	"github.com/mcfe91/oms-payments/processor/inmem"
 )
 
 func TestService(t *testing.T) {
 	processor := inmem.NewInmem()
-	svc := NewService(processor)
+	registry := inmemRegistry.NewRegsitry()
+
+	gateway := gateway.NewGRPCGateway(registry)
+	svc := NewService(processor, gateway)
 
 	t.Run("should create a payment link", func(t *testing.T) {
 		link, err := svc.CreatePayment(context.Background(), &api.Order{})

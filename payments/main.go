@@ -12,6 +12,7 @@ import (
 	"github.com/mcfe91/commons/broker"
 	"github.com/mcfe91/commons/discovery"
 	"github.com/mcfe91/commons/discovery/consul"
+	"github.com/mcfe91/oms-payments/gateway"
 	stripeProcessor "github.com/mcfe91/oms-payments/processor/stripe"
 	"github.com/stripe/stripe-go/v78"
 	"google.golang.org/grpc"
@@ -64,7 +65,8 @@ func main() {
 	}()
 
 	stripeProcessor := stripeProcessor.NewProcessor()
-	svc := NewService(stripeProcessor)
+	gateway := gateway.NewGRPCGateway(registry)
+	svc := NewService(stripeProcessor, gateway)
 
 	amqpConsumer := NewConsumer(svc)
 	go amqpConsumer.Listen(ch)
