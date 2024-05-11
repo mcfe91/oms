@@ -11,15 +11,20 @@ import (
 )
 
 type consumer struct {
-	service PaymentService
+	service OrderService
 }
 
-func NewConsumer(service PaymentService) *consumer {
+func NewConsumer(service OrderService) *consumer {
 	return &consumer{service}
 }
 
 func (c *consumer) Listen(ch *amqp.Channel) {
-	q, err := ch.QueueDeclare(broker.OrderCreatedEvent, true, false, false, false, nil)
+	q, err := ch.QueueDeclare("", true, false, true, false, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = ch.QueueBind(q.Name, "", broker.OrderPaidEvent, false, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,20 +47,18 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 				continue
 			}
 
-			paymentLink, err := c.service.CreatePayment(context.Background(), o)
-			if err == nil {
-				log.Printf("failed to create payment: %v", err)
+			_, err := c.service.UpdateOrder(context.Background(), o)
+			if err != nil {
+				log.Printf("failed to update order: %v", err)
 
 				if err := broker.HandleRetry(ch, &d); err != nil {
 					log.Printf("error handling retry: %v", err)
 				}
 
-				d.Nack(false, false)
-
 				continue
 			}
 
-			log.Printf("payment link created %s", paymentLink)
+			log.Printf("order has been updated from AMQP")
 			d.Ack(false)
 		}
 	}()

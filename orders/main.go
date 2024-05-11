@@ -65,6 +65,9 @@ func main() {
 	svc := NewService(store)
 	NewGRPCHandler(grpcServer, svc, ch)
 
+	amqpConsumer := NewConsumer(svc)
+	go amqpConsumer.Listen(ch)
+
 	log.Println("grpc server started at", grpcAddr)
 
 	if err := grpcServer.Serve(l); err != nil {
