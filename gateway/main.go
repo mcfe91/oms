@@ -43,9 +43,7 @@ func main() {
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
 	mux := http.NewServeMux()
-
 	ordersGateway := gateway.NewGRPCGateway(registry)
-
 	handler := NewHandler(ordersGateway)
 	handler.registerRoutes(mux)
 

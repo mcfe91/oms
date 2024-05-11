@@ -77,7 +77,7 @@ func (h *handler) handleCreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res := &CreateOrderRequest{
+	res := &CreateOrderResponse{
 		Order:         o,
 		RedirectToUrl: fmt.Sprintf("http://localhost:8080/success.html?customerID=%s&orderID=%s", o.CustomerID, o.ID),
 	}
