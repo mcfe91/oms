@@ -20,8 +20,12 @@ func NewHandler(gateway gateway.OrdersGateway) *handler {
 }
 
 func (h *handler) registerRoutes(mux *http.ServeMux) {
+	// static file serve
+	mux.Handle("/", http.FileServer(http.Dir("public")))
+
 	mux.HandleFunc("POST /api/customers/{customerID}/orders", h.handleCreateOrder)
 	mux.HandleFunc("GET /api/customers/{customerID}/orders/{orderID}", h.handleGetOrder)
+
 }
 
 func (h *handler) handleGetOrder(w http.ResponseWriter, r *http.Request) {

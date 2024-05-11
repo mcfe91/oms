@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -17,14 +18,16 @@ import (
 )
 
 var (
-	serviceName = "payments"
-	grpcAddr    = common.EnvString("GRPC_ADDR", "localhost:2001")
-	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
-	amqpUser    = common.EnvString("RABBITMQ_USER", "guest")
-	amqpPass    = common.EnvString("RABBITMQ_PASS", "guest")
-	amqpHost    = common.EnvString("RABBITMQ_HOST", "localhost")
-	amqpPort    = common.EnvString("RABBITMQ_PORT", "5672")
-	stripeKey   = common.EnvString("STRIPE_KEY", "")
+	serviceName          = "payments"
+	httpAddr             = common.EnvString("HTTP_ADDR", "localhost:8081")
+	grpcAddr             = common.EnvString("GRPC_ADDR", "localhost:2001")
+	consulAddr           = common.EnvString("CONSUL_ADDR", "localhost:8500")
+	amqpUser             = common.EnvString("RABBITMQ_USER", "guest")
+	amqpPass             = common.EnvString("RABBITMQ_PASS", "guest")
+	amqpHost             = common.EnvString("RABBITMQ_HOST", "localhost")
+	amqpPort             = common.EnvString("RABBITMQ_PORT", "5672")
+	stripeKey            = common.EnvString("STRIPE_KEY", "")
+	endpointStripeSecret = common.EnvString("STRIPE_ENDPOINT_SECRET", "whsec_...")
 )
 
 func main() {
@@ -66,6 +69,19 @@ func main() {
 	amqpConsumer := NewConsumer(svc)
 	go amqpConsumer.Listen(ch)
 
+	// http server
+	mux := http.NewServeMux()
+	httpServer := NewPaymentHTTPHandler(ch)
+	httpServer.registerRoutes(mux)
+
+	go func() {
+		log.Println("http server started at", httpAddr)
+		if err := http.ListenAndServe(httpAddr, mux); err != nil {
+			log.Fatalf("failed to start http server")
+		}
+	}()
+
+	// gRPC server
 	grpcServer := grpc.NewServer()
 
 	l, err := net.Listen("tcp", grpcAddr)
