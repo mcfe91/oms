@@ -5,7 +5,6 @@ import (
 	"net"
 	"time"
 
-	_ "github.com/joho/godotenv/autoload"
 	common "github.com/mcfe91/commons"
 	"github.com/mcfe91/commons/broker"
 	"github.com/mcfe91/commons/discovery"
@@ -15,8 +14,8 @@ import (
 )
 
 var (
-	serviceName = "orders"
-	grpcAddr    = common.EnvString("GRPC_ADDR", "localhost:2000")
+	serviceName = "stock"
+	grpcAddr    = common.EnvString("GRPC_ADDR", "localhost:2002")
 	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
 	amqpUser    = common.EnvString("RABBITMQ_USER", "guest")
 	amqpPass    = common.EnvString("RABBITMQ_PASS", "guest")
@@ -74,11 +73,10 @@ func main() {
 	store := NewStore()
 	svc := NewService(store)
 	svcWithTelemetry := NewTelemetryMiddleware(svc)
-	svcWithLogging := NewLoggingMiddleware(svcWithTelemetry)
 
-	NewGRPCHandler(grpcServer, svcWithLogging, ch)
+	NewGRPCHandler(grpcServer, svcWithTelemetry, nil)
 
-	amqpConsumer := NewConsumer(svcWithLogging)
+	amqpConsumer := NewConsumer(svc)
 	go amqpConsumer.Listen(ch)
 
 	logger.Info("starting gRPC server", zap.String("port", grpcAddr))

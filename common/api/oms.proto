@@ -39,3 +39,25 @@ message GetOrderRequest {
     string OrderID = 1;
     string customerID = 2;
 }
+
+service StockService {
+    rpc CheckIfItemsAreInStock(CheckIfItemsAreInStockRequest) returns (CheckIfItemsAreInStockResponse);
+    rpc GetItems(GetItemsRequest) returns (GetItemsResponse);
+}
+
+message CheckIfItemsAreInStockRequest {
+    repeated ItemsWithQuantity Items = 1;
+}
+
+message CheckIfItemsAreInStockResponse {
+    bool InStock = 1;
+    repeated Item Items = 2;
+}
+
+message GetItemsRequest {
+    repeated string ItemIDs = 1;
+}
+
+message GetItemsResponse {
+    repeated Item Items = 1;
+}
