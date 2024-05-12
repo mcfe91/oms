@@ -21,12 +21,25 @@ func NewConsumer(service StockService) *consumer {
 }
 
 func (c *consumer) Listen(ch *amqp.Channel) {
-	q, err := ch.QueueDeclare("", true, false, true, false, nil)
+	q, err := ch.QueueDeclare(
+		"",    // name
+		true,  // durable
+		false, // delete when unused
+		true,  // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = ch.QueueBind(q.Name, "", broker.OrderPaidEvent, false, nil)
+	err = ch.QueueBind(
+		q.Name,                // queue name
+		"",                    // routing key
+		broker.OrderPaidEvent, // exchange
+		false,                 // no-wait
+		nil,
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +53,6 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 
 	go func() {
 		for d := range msgs {
-			log.Printf("received message: %s", d.Body)
 
 			ctx := broker.ExtractAMQPHeader(context.Background(), d.Headers)
 
@@ -53,8 +65,13 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 				log.Printf("failed to unmarshal order: %v", err)
 				continue
 			}
+			log.Printf("received message: %s", d.Body)
 
-			_ = messageSpan // Remove
+			orderID := string(d.Body)
+
+			log.Printf("order received: %s", orderID)
+
+			messageSpan.End()
 
 			// TODO: do something with message
 			// _, err := c.service.UpdateOrder(context.Background(), o)
@@ -76,5 +93,6 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 		}
 	}()
 
+	log.Println("AMQP listening...")
 	<-forever
 }
