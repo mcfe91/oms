@@ -14,10 +14,10 @@ func NewService(store StockStore) *service {
 	return &service{store}
 }
 
-func (s *service) CheckIfItemsAreInStock(ctx context.Context, p *pb.CheckIfItemsAreInStockRequest) (*pb.CheckIfItemsAreInStockResponse, error) {
-	return nil, nil
+func (s *service) CheckIfItemsAreInStock(ctx context.Context, items []*pb.ItemsWithQuantity) (bool, []*pb.Item, error) {
+	return false, nil, nil
 }
 
-func (s *service) GetItems(ctx context.Context, p *pb.GetItemsRequest) (*pb.GetItemsResponse, error) {
+func (s *service) GetItems(ctx context.Context, ids []string) ([]*pb.Item, error) {
 	return nil, nil
 }

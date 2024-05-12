@@ -14,11 +14,10 @@ func NewTelemetryMiddleware(next StockService) *TelemetryMiddleware {
 	return &TelemetryMiddleware{next}
 }
 
-func (t *TelemetryMiddleware) CheckIfItemsAreInStock(ctx context.Context, p *pb.CheckIfItemsAreInStockRequest) (*pb.CheckIfItemsAreInStockResponse, error) {
-
-	return t.next.CheckIfItemsAreInStock(ctx, p)
+func (t *TelemetryMiddleware) CheckIfItemsAreInStock(ctx context.Context, items []*pb.ItemsWithQuantity) (bool, []*pb.Item, error) {
+	return t.next.CheckIfItemsAreInStock(ctx, items)
 }
 
-func (t *TelemetryMiddleware) GetItems(ctx context.Context, p *pb.GetItemsRequest) (*pb.GetItemsResponse, error) {
-	return t.next.GetItems(ctx, p)
+func (t *TelemetryMiddleware) GetItems(ctx context.Context, ids []string) ([]*pb.Item, error) {
+	return t.next.GetItems(ctx, ids)
 }

@@ -24,10 +24,10 @@ func NewGRPCHandler(grpcServer *grpc.Server, service StockService, channel *amqp
 	pb.RegisterStockServiceServer(grpcServer, handler)
 }
 
-func (h *grpcHandler) CheckIfItemsAreInStock(ctx context.Context, p *pb.CheckIfItemsAreInStockRequest) (*pb.CheckIfItemsAreInStockResponse, error) {
+func (h *grpcHandler) CheckIfItemsAreInStock(ctx context.Context, p *pb.ItemsWithQuantity) (bool, []*pb.Item, error) {
 	return h.service.CheckIfItemsAreInStock(ctx, p)
 }
 
-func (h *grpcHandler) GetItems(ctx context.Context, p *pb.GetItemsRequest) (*pb.GetItemsResponse, error) {
-	return h.service.GetItems(ctx, p)
+func (h *grpcHandler) GetItems(ctx context.Context, ids []string) ([]*pb.Item, error) {
+	return h.service.GetItems(ctx, ids)
 }
